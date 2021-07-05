@@ -7,12 +7,18 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.renderscript.RenderScript;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.Priority;
+import com.androidnetworking.error.ANError;
+import com.androidnetworking.interfaces.JSONArrayRequestListener;
+import com.facebook.stetho.okhttp.StethoInterceptor;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.itextpdf.text.DocListener;
@@ -23,13 +29,26 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.jacksonandroidnetworking.JacksonParserFactory;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import okhttp3.OkHttpClient;
 
 import static com.nsh.getintoclub.activity.ContactDetail.branch;
 import static com.nsh.getintoclub.activity.ContactDetail.email;
@@ -54,6 +73,12 @@ public class Database extends AppCompatActivity {
     public static String c;
     final private int REQUEST_CODE_ASK_PERMISSIONS = 111;
     protected void onCreate(Bundle savedInstanceState) {
+
+        //Android Networking config by utkarshsingh99
+        AndroidNetworking.initialize(getApplicationContext());
+        AndroidNetworking.setParserFactory(new JacksonParserFactory());
+        //End of AndroidNetworking config
+
         super.onCreate(savedInstanceState);
         initUI();
         try {
@@ -70,8 +95,58 @@ public class Database extends AppCompatActivity {
         if (ContactDetail.RollLength == 0 || SkillDetail.skillet.length() == 0)
             Toast.makeText(this, "Please Enter Your Roll Number And At Least One Skill", Toast.LENGTH_SHORT).show();
         else
-            writeNewUser(ContactDetail.roll);
+           // writeNewUser(ContactDetail.roll);
+            System.out.println("About to send request");
+            sendRequest();           // Function called by utkarshsingh99
     }
+
+    // Code for MongoDB POST request - by utkarshsingh99
+    public void sendRequest(){
+
+        JSONObject jsonObject = null;
+        try {
+           jsonObject = buidJsonObject();
+        } catch(JSONException e) {
+            jsonObject = new JSONObject();
+        }
+        System.out.println(jsonObject);
+        AndroidNetworking.post("http://clubcoming.herokuapp.com/postcandidate")
+                .addJSONObjectBody(jsonObject) // posting json
+                .setTag("test")
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONArray(new JSONArrayRequestListener() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        System.out.println("POST Successful");
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        System.out.println("POST Failure"+error);
+                    }
+                });
+    }
+
+    private JSONObject buidJsonObject() throws JSONException {
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.accumulate("name", ContactDetail.name);
+        jsonObject.accumulate("mobile",  "12345");
+        jsonObject.accumulate("rollNumber",  ContactDetail.rollNo);
+        jsonObject.accumulate("club", c);
+        jsonObject.accumulate("branch", ContactDetail.branch);
+        jsonObject.accumulate("email", ContactDetail.email);
+        jsonObject.accumulate("interviewStatus", "Applied");
+        jsonObject.accumulate("skills", SkillDetail.skill);
+        jsonObject.accumulate("Achievements", SkillDetail.achievments);
+        jsonObject.accumulate("AreasOfInt", SkillDetail.interset);
+        jsonObject.accumulate("ques1", QuestionDetail.q1);
+        jsonObject.accumulate("ques2", QuestionDetail.q2);
+        jsonObject.accumulate("ques3", QuestionDetail.q3);
+        jsonObject.accumulate("ques4", QuestionDetail.q4);
+        return jsonObject;
+    }
+    //End of Code by utkarshsingh99
 
     private void writeNewUser(String roll) {
             mDatabase.child(c).child(roll).child("Name").setValue(ContactDetail.name);

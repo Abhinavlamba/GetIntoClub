@@ -32,15 +32,15 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Transparent" />
         <activity
-            android:name=".activity.DashActivity"
+            android:name=".activity.OtpGenerator"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Transparent"></activity>
+            android:theme="@style/Theme.Transparent"/>
         <activity
             android:name=".activity.AboutAppteam"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Transparent" />
         <activity
-            android:name=".activity.OtpGenerator"
+            android:name=".activity.DashActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

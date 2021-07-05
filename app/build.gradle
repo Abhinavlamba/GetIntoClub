@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
     defaultConfig {
+        multiDexEnabled true
         applicationId "com.nsh.getintoclub"
         minSdkVersion 19
         targetSdkVersion 27
@@ -35,5 +36,8 @@ dependencies {
     implementation 'com.firebaseui:firebase-ui-auth:4.1.0'
     implementation 'com.google.firebase:firebase-core:16.0.1'
     compile 'com.itextpdf:itextg:5.5.10'
+    compile 'com.amitshekhar.android:android-networking:1.0.2'
+    compile 'com.amitshekhar.android:jackson-android-networking:1.0.2'
+    compile 'com.facebook.stetho:stetho-okhttp:1.2.0'
 }
 apply plugin: 'com.google.gms.google-services'
